@@ -17,35 +17,35 @@ import rxkafka from "ts-reactivekafka";
 import { tap } from "rxjs/operators";
 
 (async () => {
-	let kafkaConfig = {
-		kafkaHost: process.env.KAFKA_HOST || "url:9092",
-		serviceId: "test",
-		logAllEvents: true,
-		ssl: true,
-		sasl: {
-			mechanism: "plain",
-			username: process.env.KAFKA_USER || "xxuser",
-			password: process.env.KAFKA_PASS || "xxapitoken",
-		},
-	};
+  let kafkaConfig = {
+    kafkaHost: process.env.KAFKA_HOST || "url:9092",
+    serviceId: "test",
+    logAllEvents: true,
+    ssl: true,
+    sasl: {
+      mechanism: "plain",
+      username: process.env.KAFKA_USER || "xxuser",
+      password: process.env.KAFKA_PASS || "xxapitoken",
+    },
+  };
 
-	let kafka = rxkafka({
-		...kafkaConfig,
-		consumerConfig: {
-			topics: ["topicA", "topicB", "topicC"],
-			consumerId: "testConsumer",
-		},
-		producerConfig: {
-			topics: ["target"],
-		},
-	});
+  let kafka = rxkafka({
+    ...kafkaConfig,
+    consumerConfig: {
+      topics: ["topicA", "topicB", "topicC"],
+      consumerId: "testConsumer",
+    },
+    producerConfig: {
+      topics: ["target"],
+    },
+  });
 
-	kafka.consumer
-		.getSubject()
-		.pipe(
-			tap((event) => console.log(event)) // rxjs operators
-		)
-		.subscribe(kafka.producer.getSubject());
+  kafka.consumer
+    .getSubject()
+    .pipe(
+      tap((event) => console.log(event)) // rxjs operators
+    )
+    .subscribe(kafka.producer.getSubject());
 })();
 ```
 

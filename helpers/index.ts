@@ -1,4 +1,4 @@
-import generator from "./generator"
-import logging from "./logging"
+import generator from "./generator";
+import logging from "./logging";
 
-export { generator, logging }
+export { generator, logging };

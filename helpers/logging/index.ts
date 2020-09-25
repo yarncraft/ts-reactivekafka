@@ -1,14 +1,14 @@
 function report(message) {
-	const date = new Date().toLocaleString();
+  const date = new Date().toLocaleString();
 
-	console.log(`logged on: ${date}`);
-	console.log(message);
+  console.log(`logged on: ${date}`);
+  console.log(message);
 }
 function error(message) {
-	console.error(message);
+  console.error(message);
 }
 function warn(message) {
-	console.warn(message);
+  console.warn(message);
 }
 
-export default { report, error, warn }
+export default { report, error, warn };
