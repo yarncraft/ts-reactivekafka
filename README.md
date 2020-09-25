@@ -12,40 +12,105 @@ _Typesafe & reactive Kafka Subjects made with Typescript, KafkaJS and RxJS._
 npm i ts-reactivekafka
 ```
 
+_single consumer_
+
 ```typescript
 import rxkafka from "ts-reactivekafka";
 import { tap } from "rxjs/operators";
 
 (async () => {
-  let kafkaConfig = {
-    kafkaHost: process.env.KAFKA_HOST || "url:9092",
-    serviceId: "test",
-    logAllEvents: true,
-    ssl: true,
-    sasl: {
-      mechanism: "plain",
-      username: process.env.KAFKA_USER || "xxuser",
-      password: process.env.KAFKA_PASS || "xxapitoken",
-    },
-  };
+	let kafkaConfig = {
+		kafkaHost: process.env.KAFKA_HOST || "url:9092",
+		serviceId: "test",
+		logAllEvents: false,
+		ssl: true,
+		sasl: {
+			mechanism: "plain",
+			username: process.env.KAFKA_USER || "xxuser",
+			password: process.env.KAFKA_PASS || "xxapitoken",
+		},
+	};
 
-  let kafka = rxkafka({
-    ...kafkaConfig,
-    consumerConfig: {
-      topics: ["topicA", "topicB", "topicC"],
-      consumerId: "testConsumer",
-    },
-    producerConfig: {
-      topics: ["target"],
-    },
-  });
+	// singleton is instantiated
+	rxkafka({
+		...kafkaConfig,
+		consumerConfig: {
+			topics: ["topicA", "topicB", "topicC"],
+			consumerId: "testConsumer",
+		},
+		producerConfig: {
+			topics: ["target"],
+		},
+	});
 
-  kafka.consumer
-    .getSubject()
-    .pipe(
-      tap((event) => console.log(event)) // rxjs operators
-    )
-    .subscribe(kafka.producer.getSubject());
+	// NOTE: multiple invocations of rxkafka result in the original singleton
+	let kafka = rxkafka();
+
+	kafka.consumer
+		.getSubject()
+		.pipe(
+			tap((event) => console.log(event.message)) // rxjs operators
+		)
+		.subscribe(kafka.producer.getSubject());
+})();
+```
+
+_consumer group with [dynamic import](https://mariusschulz.com/blog/dynamic-import-expressions-in-typescript)_
+
+```typescript
+import { merge } from "rxjs";
+
+(async () => {
+	const kafkaConfig = {
+		kafkaHost: process.env.KAFKA_HOST || "url:9092",
+		serviceId: "test",
+		logAllEvents: false,
+		ssl: true,
+		sasl: {
+			mechanism: "plain",
+			username: process.env.KAFKA_USER || "xxuser",
+			password: process.env.KAFKA_PASS || "xxapitoken",
+		},
+	};
+
+	const kafkaProducerSingleton = (await import("ts-reactivekafka"))({
+		...kafkaConfig,
+		producerConfig: {
+			topics: ["target"],
+		},
+	});
+
+	const kafkaGroupConsumer1 = (await import("ts-reactivekafka"))({
+		...kafkaConfig,
+		consumerConfig: {
+			topics: ["topicA", "topicB", "topicC"],
+			consumerGroupId: "consumerGroupX", // NOTE: consumerGroupId instead of consumerId
+		},
+	});
+
+	const kafkaGroupConsumer2 = (await import("ts-reactivekafka"))({
+		...kafkaConfig,
+		consumerConfig: {
+			topics: ["topicA", "topicB", "topicC"],
+			consumerGroupId: "consumerGroupX",
+		},
+	});
+
+	const kafkaGroupConsumer3 = (await import("ts-reactivekafka"))({
+		...kafkaConfig,
+		consumerConfig: {
+			topics: ["topicA", "topicB", "topicC"],
+			consumerGroupId: "consumerGroupX",
+		},
+	});
+
+	const consumerGroup = merge(
+		kafkaGroupConsumer1.consumer.getSubject(),
+		kafkaGroupConsumer2.consumer.getSubject(),
+		kafkaGroupConsumer3.consumer.getSubject()
+	);
+
+	consumerGroup.subscribe(kafkaProducerSingleton.producer.getSubject());
 })();
 ```
 
