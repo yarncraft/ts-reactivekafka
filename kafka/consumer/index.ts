@@ -34,8 +34,7 @@ export default class KafkaConsumer {
     this.consumer = this.client.consumer({
       groupId:
         this.consumerGroupId ||
-        `${this.consumerId}-${
-          process.pid
+        `${this.consumerId}-${process.pid
         }-${new Date().getTime()}-${generator.generateUuid()}`, //eslint-disable-line max-len
       maxBytesPerPartition:
         options.maxBytesPerPartition || kafkaConfig.maxBytesPerPartition,
@@ -85,9 +84,12 @@ export default class KafkaConsumer {
         eachMessage: async ({ topic, partition, message }) => {
           if (message && topic) {
             try {
-              const payload: any = JSON.parse(message.value.toString());
-              let key = message.key.toString();
-
+              let payload: any
+              try { payload = JSON.parse(message.value.toString()); }
+              catch (err) {
+                payload = message.value.toString()
+              }
+              const key = message.key.toString();
               const headers = message.headers;
 
               this.sendUpdateToObservers({
@@ -129,5 +131,10 @@ export default class KafkaConsumer {
 
   getSubject() {
     return this.consumerSubject;
+  }
+
+  async disconnect() {
+    await this.consumer.disconnect()
+    this.consumerSubject.complete()
   }
 }

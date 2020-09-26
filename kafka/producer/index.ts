@@ -26,6 +26,11 @@ export default class KafkaProducer {
     return this.producerSubject;
   }
 
+  async disconnect() {
+    await this.producer.disconnect()
+    this.producerSubject.complete()
+  }
+
   private initProducer() {
     (async () => {
       try {
@@ -44,11 +49,16 @@ export default class KafkaProducer {
 
     this.producerSubject.subscribe(({ message }) => {
       let { value, ...rest } = message;
+
+      try {
+        value = JSON.stringify(value)
+      }
+      catch (err) { }
       this.topics.map(
         async (topic) =>
           await this.producer.send({
             topic: topic,
-            messages: [{ value: JSON.stringify(value), ...rest }],
+            messages: [{ value, ...rest }],
           })
       );
     });

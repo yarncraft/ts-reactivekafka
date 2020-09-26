@@ -114,9 +114,16 @@ import { merge } from "rxjs";
 })();
 ```
 
-## Singleton Pattern
+## The Code
 
-The code follows a Singleton Pattern in which an optional consumer and producer instance are made available given the respective consumer and producer configurations and given a general Kafka config. The only public method for both instances is _getSubject()_ which returns the RxJs Subject (a multicasted observable). The subjects are typed as follows:
+The code follows a Singleton Pattern\* in which an optional consumer and producer instance are made available given the respective consumer and producer configurations and given a general Kafka config. The consumer or producer instance is only instantiated when their respective configs are well-defined.
+
+The only public methods for both instances are:
+
+- _getSubject()_ which returns the RxJs Subject (a multicasted observable)
+- _disconnect()_ which disconnects the Kafka consumer/producer and completes the subject
+
+The subjects are typed as follows:
 
 ```typescript
 type Event = {
@@ -130,7 +137,7 @@ type Event = {
 Subject<{topic: string, message: Event}>
 ```
 
-Since, in Typescript, no basic JSON type exists _yet_ the value is typed as any. It is important however that the value of the Kafka messages are JSON strings (are JSON parseable).
+Since, in Typescript, no basic JSON type exists _yet_ the value is typed as any. Otherwise value could have been typed as `JSON | string`.
 
 ## Reactive Operators
 
@@ -149,3 +156,10 @@ A good overview of the operators can be found here:
 - Don't waste time configuring bundlers
 - Generally faster bootup time and less I/O overhead
 - Compiled language-like experience (e.g.: go)
+
+## Sponsored by Charp
+
+This package is used in production and maintained by the developers of [Charp](https://artcare.be/).
+
+<img src="https://wms.cs.kuleuven.be/cs/studeren/master-computerwetenschappen/stages/stagevoorstellen/logos-2020/logo-charp/@@images/image/preview
+" width="250">

@@ -1,7 +1,7 @@
 import { KafkaConsumer, KafkaProducer } from "./kafka";
 import { Kafka, logLevel } from "kafkajs";
 
-let instance, consumer, producer;
+let instance, consumer: KafkaConsumer | undefined, producer: KafkaProducer | undefined;
 
 const errorTypes = ["unhandledRejection", "uncaughtException"];
 
@@ -10,7 +10,8 @@ errorTypes.map((type) => {
     try {
       console.log(`process.on ${type}`);
       console.error(e);
-      await consumer.disconnect();
+      if (consumer) await consumer.disconnect();
+      if (producer) await producer.disconnect();
       process.exit(0);
     } catch (_) {
       process.exit(1);
@@ -21,7 +22,8 @@ errorTypes.map((type) => {
 Object.values<NodeJS.Signals>(["SIGHUP", "SIGINT", "SIGTERM"]).map((type) => {
   process.once(type, async () => {
     try {
-      await consumer.disconnect();
+      if (consumer) await consumer.disconnect();
+      if (producer) await producer.disconnect();
     } finally {
       process.kill(process.pid, type);
     }
@@ -48,19 +50,19 @@ export default (options) => {
 
   consumer = consumerConfig
     ? new KafkaConsumer({
-        ...consumerConfig,
-        client,
-        ...rest,
-      })
-    : {};
+      ...consumerConfig,
+      client,
+      ...rest,
+    })
+    : undefined;
 
   producer = producerConfig
     ? new KafkaProducer({
-        ...producerConfig,
-        client,
-        ...rest,
-      })
-    : {};
+      ...producerConfig,
+      client,
+      ...rest,
+    })
+    : undefined;
 
   instance = {
     consumer,
