@@ -161,5 +161,4 @@ A good overview of the operators can be found here:
 
 This package is used in production and maintained by the developers of [Charp](https://artcare.be/).
 
-<img src="https://wms.cs.kuleuven.be/cs/studeren/master-computerwetenschappen/stages/stagevoorstellen/logos-2020/logo-charp/@@images/image/preview
-" width="250">
+<img src="https://wms.cs.kuleuven.be/cs/studeren/master-computerwetenschappen/stages/stagevoorstellen/logos-2020/logo-charp/@@images/image/preview" width="250">
